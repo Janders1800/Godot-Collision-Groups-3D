@@ -49,17 +49,17 @@ func index_pressed(index : int) -> void:
 		remove_group()
 		return
 	
-	# Assing masks to nodes
+	# Assign masks to nodes
 	for node in nodes:
 		node.collision_layer = collisions[index - DROPDOWN_OFFSET].layer
 		node.collision_mask = collisions[index - DROPDOWN_OFFSET].mask
 
 
 func fill_dropdown() -> void:
-	# Add saved groups to the menu here
 	dropdown.get_popup().add_item("Add from selected")
 	dropdown.get_popup().add_item("Remove from selected")
 	dropdown.get_popup().add_separator()
+	# Add saved groups to the menu
 	load_data()
 
 
@@ -110,16 +110,16 @@ func int_to_mask(number : int) -> String:
 func save_data() -> void:
 	var file := FileAccess.open(SAVE_FILE,FileAccess.WRITE)
 	if file:
-		file.store_var(collisions, true)
-		file.store_var(group_names, true)
+		file.store_var(collisions)
+		file.store_var(group_names)
 		file.close()
 
 
 func load_data():
 	var file := FileAccess.open(SAVE_FILE, FileAccess.READ)
 	if file:
-		collisions = file.get_var(true)
-		group_names = file.get_var(true)
+		collisions = file.get_var()
+		group_names = file.get_var()
 		file.close()
 		
 		for name in group_names:
