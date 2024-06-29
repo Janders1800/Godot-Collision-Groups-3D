@@ -115,7 +115,7 @@ func save_data() -> void:
 		file.close()
 
 
-func load_data():
+func load_data() -> void:
 	var file := FileAccess.open(SAVE_FILE, FileAccess.READ)
 	if file:
 		collisions = file.get_var()
