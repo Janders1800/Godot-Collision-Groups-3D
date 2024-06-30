@@ -183,7 +183,12 @@ func ok_button_pressed() -> void:
 		print("The name field is empty!")
 		line_edit.grab_focus()
 		return
-	dropdown.get_popup().set_item_text(rename_index + DROPDOWN_OFFSET, line_edit.text)
+	
+	var drpdn_index := rename_index + DROPDOWN_OFFSET
+	var tooltip := dropdown.get_popup().get_item_text(drpdn_index)
+	dropdown.get_popup().set_item_tooltip(drpdn_index, tooltip)
+	dropdown.get_popup().set_item_text(drpdn_index, line_edit.text)
+	
 	group_names[rename_index] = line_edit.text
 	save_data()
 	rename_popup.hide()
