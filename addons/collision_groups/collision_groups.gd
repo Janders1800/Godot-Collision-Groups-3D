@@ -20,6 +20,7 @@ var cancel_button := Button.new()
 var nodes : Array[CollisionObject3D]
 var collisions : Array
 var group_names : Array
+var tooltips : Array
 
 var new_name : String = ""
 var rename_index : int = 0
@@ -97,8 +98,9 @@ func index_pressed(index : int) -> void:
 			# Rename popup
 			if not group_names.is_empty():
 				rename_select.text = group_names[0]
-				for name in group_names:
-					rename_select.get_popup().add_item(name)
+				for i in range(group_names.size()):
+					rename_select.get_popup().add_item(group_names[i])
+					rename_select.get_popup().set_item_tooltip(i, tooltips[i])
 				var temp_pos := dropdown.get_popup().position
 				rename_popup.popup(Rect2i(temp_pos, Vector2i(200, 0)))
 				line_edit.grab_focus()
@@ -139,6 +141,7 @@ func add_group() -> void:
 			
 			collisions.append(c)
 			group_names.append(name)
+			tooltips.append("")
 			dropdown.get_popup().add_item(name)
 			save_data()
 
@@ -154,6 +157,7 @@ func remove_group() -> void:
 			var i := collisions.find(c)
 			collisions.remove_at(i)
 			group_names.remove_at(i)
+			tooltips.remove_at(i)
 			dropdown.get_popup().remove_item(i + DROPDOWN_OFFSET)
 			save_data()
 
@@ -178,6 +182,7 @@ func line_edit_submitted(text : String) -> void:
 	ok_button_pressed()
 
 
+# Rename collision group
 func ok_button_pressed() -> void:
 	if line_edit.text.is_empty():
 		print("The name field is empty!")
@@ -186,9 +191,17 @@ func ok_button_pressed() -> void:
 	
 	var drpdn_index := rename_index + DROPDOWN_OFFSET
 	var tooltip := dropdown.get_popup().get_item_text(drpdn_index)
-	dropdown.get_popup().set_item_tooltip(drpdn_index, tooltip)
-	dropdown.get_popup().set_item_text(drpdn_index, line_edit.text)
 	
+	if line_edit.text.match(tooltip):
+		print("Can't be the same name")
+		line_edit.grab_focus()
+		return
+	
+	if tooltips[rename_index].is_empty(): # Only set the tooltip the first time
+		dropdown.get_popup().set_item_tooltip(drpdn_index, tooltip)
+		tooltips[rename_index] = tooltip
+	
+	dropdown.get_popup().set_item_text(drpdn_index, line_edit.text)
 	group_names[rename_index] = line_edit.text
 	save_data()
 	rename_popup.hide()
@@ -203,6 +216,7 @@ func save_data() -> void:
 	if file:
 		file.store_var(collisions)
 		file.store_var(group_names)
+		file.store_var(tooltips)
 		file.close()
 
 
@@ -211,7 +225,9 @@ func load_data() -> void:
 	if file:
 		collisions = file.get_var()
 		group_names = file.get_var()
+		tooltips = file.get_var()
 		file.close()
 		
-		for name in group_names:
-			dropdown.get_popup().add_item(name)
+		for i in range(group_names.size()):
+			dropdown.get_popup().add_item(group_names[i])
+			dropdown.get_popup().set_item_tooltip(i + DROPDOWN_OFFSET, tooltips[i])
