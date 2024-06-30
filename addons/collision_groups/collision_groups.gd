@@ -91,7 +91,6 @@ func index_pressed(index : int) -> void:
 			# Add a new entry per collision setup
 			add_group()
 		1:
-			print("should not print")
 			# Remove entry per selection collision coincidence
 			remove_group()
 		3:
@@ -101,7 +100,7 @@ func index_pressed(index : int) -> void:
 				for name in group_names:
 					rename_select.get_popup().add_item(name)
 				var temp_pos := dropdown.get_popup().position
-				rename_popup.popup(Rect2i(temp_pos, Vector2i(205, 0)))
+				rename_popup.popup(Rect2i(temp_pos, Vector2i(200, 0)))
 				line_edit.grab_focus()
 			else:
 				print("No collision groups found")
