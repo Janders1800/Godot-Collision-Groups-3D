@@ -40,27 +40,28 @@ func _exit_tree() -> void:
 
 
 func _ready() -> void:
-	# Sets the rename popup
+	# Constructs the rename popup, I have no idea what I'm doing
+	# I don't know how to make it thake the editor theme
+	# vBoxContainer.theme = get_editor_interface().get_editor_theme() does nothing
 	get_editor_interface().get_base_control().add_child(rename_popup)
 	rename_popup.connect("popup_hide", rename_popup_hide)
-	rename_popup.title = "Rename collision group"
-	rename_popup.size.x = 205
-	rename_popup.add_child(vBoxContainer)
+	rename_popup.size.x = 200
+	rename_popup.add_child(vBoxContainer) # Tried to add a panel here but it crashes, no idea why
+	vBoxContainer.size.x = 200 # For some reason I have to set this so the container actually fills the popup
 	vBoxContainer.set_anchors_preset(Control.PRESET_FULL_RECT)
 	vBoxContainer.add_child(rename_select)
 	rename_select.get_popup().connect("index_pressed", rename_index_change)
 	vBoxContainer.add_child(line_edit)
 	line_edit.connect("text_submitted", line_edit_submitted)
+	line_edit.placeholder_text = "New name"
 	vBoxContainer.add_child(hBoxContainer)
-	hBoxContainer.size_flags_horizontal = Control.SIZE_FILL
-	hBoxContainer.size_flags_vertical = Control.SIZE_FILL
 	hBoxContainer.add_child(ok_button)
-	ok_button.custom_minimum_size = Vector2i(100, 30)
 	ok_button.text = "OK"
+	ok_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	ok_button.connect("pressed", ok_button_pressed)
 	hBoxContainer.add_child(cancel_button)
-	cancel_button.custom_minimum_size = Vector2i(100, 30)
 	cancel_button.text = "Cancel"
+	cancel_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	cancel_button.connect("pressed", cancel_button_pressed)
 
 
@@ -89,29 +90,29 @@ func index_pressed(index : int) -> void:
 		0:
 			# Add a new entry per collision setup
 			add_group()
-			return
 		1:
+			print("should not print")
 			# Remove entry per selection collision coincidence
 			remove_group()
-			return
 		3:
 			# Rename popup
 			if not group_names.is_empty():
 				rename_select.text = group_names[0]
 				for name in group_names:
 					rename_select.get_popup().add_item(name)
-				rename_popup.popup_centered()
+				var temp_pos := dropdown.get_popup().position
+				rename_popup.popup(Rect2i(temp_pos, Vector2i(205, 0)))
+				line_edit.grab_focus()
 			else:
 				print("No collision groups found")
-			return
 		_:
 			# Assign masks to nodes
 			undo_redo.create_action("Set collision group")
 			for node in nodes:
-				undo_redo.add_undo_property(node, "collision_layer", node.collision_layer)
-				undo_redo.add_undo_property(node, "collision_mask", node.collision_mask)
 				undo_redo.add_do_property(node, "collision_layer", collisions[index - DROPDOWN_OFFSET].layer)
 				undo_redo.add_do_property(node, "collision_mask", collisions[index - DROPDOWN_OFFSET].mask)
+				undo_redo.add_undo_property(node, "collision_layer", node.collision_layer)
+				undo_redo.add_undo_property(node, "collision_mask", node.collision_mask)
 			undo_redo.commit_action()
 
 
@@ -181,6 +182,7 @@ func line_edit_submitted(text : String) -> void:
 func ok_button_pressed() -> void:
 	if line_edit.text.is_empty():
 		print("The name field is empty!")
+		line_edit.grab_focus()
 		return
 	dropdown.get_popup().set_item_text(rename_index + DROPDOWN_OFFSET, line_edit.text)
 	group_names[rename_index] = line_edit.text
